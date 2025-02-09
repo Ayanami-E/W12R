@@ -1,10 +1,8 @@
 import { Router } from "express";
-import { Book } from "../models/Book";
 import mongoose from "mongoose";
 
 const router = Router();
 
-// **强制创建 `books` 集合**
 const ensureBooksCollection = async () => {
   const db = mongoose.connection.db;
   const collections = await db.listCollections().toArray();
@@ -15,11 +13,19 @@ const ensureBooksCollection = async () => {
   }
 };
 
-// **确保集合存在后，再执行查询**
+// **获取所有书籍**
 router.get("/all", async (req, res) => {
   await ensureBooksCollection();
-  const books = await Book.find();
+  const books = await mongoose.connection.db.collection("books").find().toArray();
   res.json(books);
+});
+
+// **添加一本书**
+router.post("/", async (req, res) => {
+  await ensureBooksCollection();
+  const { name, author, pages } = req.body;
+  const result = await mongoose.connection.db.collection("books").insertOne({ name, author, pages });
+  res.status(201).json({ message: "Book added!", id: result.insertedId });
 });
 
 export default router;
