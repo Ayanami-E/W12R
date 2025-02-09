@@ -1,11 +1,28 @@
 {
-  "name": "my-fullstack-project",
+  "name": "W10",
   "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
     "install": "cd client && npm install",
-    "dev:client": "cd client && npm run dev"
+    "preinstall": "cd server && npm install",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "my-fullstack-project": "file:"
+    "books-project": "file:",
+    "cors": "^2.8.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "W10": "file:"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/morgan": "^1.9.9",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3"
   }
 }

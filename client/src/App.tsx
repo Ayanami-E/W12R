@@ -1,29 +1,13 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import bookRoutes from './bookRoutes';
+import React from 'react';
+import BookForm from './BookForm';
 
-const app = express();
-
-// 仅在开发环境启用 CORS
-if (process.env.NODE_ENV === 'development') {
-  app.use(cors({
-    origin: 'http://localhost:3000',
-    optionsSuccessStatus: 200
-  }));
+function App() {
+  return (
+    <div>
+      <h1>Book Submit</h1>
+      <BookForm />
+    </div>
+  );
 }
 
-// 解析 JSON 请求体
-app.use(express.json());
-
-// 路由
-app.use('/api/book', bookRoutes);
-
-// 数据库连接
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mybooks';
-
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-export default app;
+export default App;
