@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 
-function BookForm() {
-  const [formData, setFormData] = useState({
+interface FormData {
+  name: string;
+  author: string;
+  pages: string;
+}
+
+function BookForm(): JSX.Element {
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     author: '',
     pages: ''
@@ -10,7 +16,7 @@ function BookForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -19,7 +25,7 @@ function BookForm() {
     setError(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -34,7 +40,7 @@ function BookForm() {
     try {
       const response = await fetch('/api/book', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(bookData)

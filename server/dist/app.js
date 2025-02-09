@@ -7,7 +7,7 @@ const express_1 = __importDefault(require("express"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const cors_1 = __importDefault(require("cors"));
 const bookRoutes_1 = __importDefault(require("./bookRoutes"));
-const morgan_1 = __importDefault(require("morgan")); // 添加日志中间件
+const morgan_1 = __importDefault(require("morgan"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 1234;
 // 启用日志
@@ -21,7 +21,7 @@ app.use((0, cors_1.default)({
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 // 路由
-app.use('/api', bookRoutes_1.default); // 修改路由前缀
+app.use('/api', bookRoutes_1.default);
 // 错误处理中间件
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -31,16 +31,16 @@ app.use((err, req, res, next) => {
     });
 });
 // 数据库连接
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/bookstore';
-mongoose_1.default.connect(MONGODB_URI)
-    .then(() => {
+const MONGODB_URI = 'mongodb://127.0.0.1:27017/bookstore';
+mongoose_1.default.connect(MONGODB_URI);
+mongoose_1.default.Promise = Promise;
+const db = mongoose_1.default.connection;
+db.on('error', console.error.bind(console, "MongoDB connection error"));
+db.once('open', () => {
     console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
-    });
-})
-    .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
+});
+// 启动服务器
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
 exports.default = app;
