@@ -1,11 +1,20 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import cors from 'cors';
 import bookRoutes from './bookRoutes';
 
 const app = express();
 
-// 中间件
-app.use(express.json()); // 用于解析 JSON 请求体
+// 仅在开发环境启用 CORS
+if (process.env.NODE_ENV === 'development') {
+  app.use(cors({
+    origin: 'http://localhost:3000',
+    optionsSuccessStatus: 200
+  }));
+}
+
+// 解析 JSON 请求体
+app.use(express.json());
 
 // 路由
 app.use('/api/book', bookRoutes);
@@ -13,7 +22,6 @@ app.use('/api/book', bookRoutes);
 // 数据库连接
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mybooks';
 
-// 注意：连接数据库应该放在监听端口之前，或在 index.ts 中统一处理
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
