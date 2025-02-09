@@ -1,79 +1,125 @@
 import React, { useState } from 'react';
 
 function BookForm() {
-  // 状态变量
-  const [name, setName] = useState('');
-  const [author, setAuthor] = useState('');
-  const [pages, setPages] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    author: '',
+    pages: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 组装要发送的对象
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
     const bookData = {
-      name: name,
-      author: author,
-      pages: parseInt(pages, 10) || 0
+      name: formData.name.trim(),
+      author: formData.author.trim(),
+      pages: parseInt(formData.pages, 10) || 0
     };
 
     try {
-      // 通过相对路径 "/api/book" 发起请求
-      // 因为 vite.config.ts 已配好 proxy，会转发到 http://localhost:1234/api/book
       const response = await fetch('/api/book', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(bookData)
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to save the book');
+        throw new Error(data.message || 'Failed to save the book');
       }
 
-      const data = await response.json();
+      setSuccess(true);
+      setFormData({ name: '', author: '', pages: '' });
       console.log('Book saved:', data);
-      // 提交成功，可以做一些提示，或清空表单
-      setName('');
-      setAuthor('');
-      setPages('');
     } catch (err) {
-      console.error(err);
-      alert('Error: ' + err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Book Name:</label>
-        <input
-          type="text"
-          name="name"
-          value={name}
-          required
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Author:</label>
-        <input
-          type="text"
-          name="author"
-          value={author}
-          required
-          onChange={(e) => setAuthor(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Pages:</label>
-        <input
-          type="number"
-          name="pages"
-          value={pages}
-          required
-          onChange={(e) => setPages(e.target.value)}
-        />
-      </div>
-      <button type="submit" name="submit">Submit Book</button>
-    </form>
+    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded shadow">
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+          Book successfully added!
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block mb-1">Book Name:</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            className="w-full p-2 border rounded"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Author:</label>
+          <input
+            type="text"
+            name="author"
+            value={formData.author}
+            onChange={handleChange}
+            required
+            className="w-full p-2 border rounded"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Pages:</label>
+          <input
+            type="number"
+            name="pages"
+            value={formData.pages}
+            onChange={handleChange}
+            required
+            min="1"
+            className="w-full p-2 border rounded"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full p-2 text-white rounded ${
+            loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
+          }`}
+        >
+          {loading ? 'Saving...' : 'Submit Book'}
+        </button>
+      </form>
+    </div>
   );
 }
 

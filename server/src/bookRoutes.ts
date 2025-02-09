@@ -1,31 +1,40 @@
-import { Router } from "express";
-import mongoose from "mongoose";
+import { Router, Request, Response } from 'express';
+import Book from './book';
 
 const router = Router();
 
-const ensureBooksCollection = async () => {
-  const db = mongoose.connection.db;
-  const collections = await db.listCollections().toArray();
-  if (!collections.some(col => col.name === "books")) {
-    console.log("⚠️ 'books' collection does not exist, creating...");
-    await db.createCollection("books");
-    console.log("✅ Created 'books' collection");
-  }
-};
-
-// **获取所有书籍**
-router.get("/all", async (req, res) => {
-  await ensureBooksCollection();
-  const books = await mongoose.connection.db.collection("books").find().toArray();
-  res.json(books);
+// POST: 保存新书 - 现在路径是 /api/book
+router.post('/book', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { name, author, pages } = req.body;
+        const existingBook = await Book.findOne({ name });
+        if (existingBook) {
+            res.status(403).json({ message: 'Book already in database.' });
+            return;
+        }
+        const newBook = new Book({ name, author, pages });
+        await newBook.save();
+        res.status(201).json(newBook);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error.' });
+    }
 });
 
-// **添加一本书**
-router.post("/", async (req, res) => {
-  await ensureBooksCollection();
-  const { name, author, pages } = req.body;
-  const result = await mongoose.connection.db.collection("books").insertOne({ name, author, pages });
-  res.status(201).json({ message: "Book added!", id: result.insertedId });
+// GET: 通过书名获取书籍 - 现在路径是 /api/book/:title
+router.get('/book/:title', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const title = decodeURIComponent(req.params.title);
+        const book = await Book.findOne({ name: title });
+        
+        if (!book) {
+            res.status(404).json({ message: '404: This is not the webpage you are looking for' });
+            return;
+        }
+        
+        res.json(book);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 export default router;

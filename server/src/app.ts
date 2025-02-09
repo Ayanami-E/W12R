@@ -2,43 +2,49 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import bookRoutes from './bookRoutes';
+import morgan from 'morgan'; // 添加日志中间件
 
 const app = express();
+const PORT = process.env.PORT || 1234;
 
-// 仅在开发环境启用 CORS
-if (process.env.NODE_ENV === 'development') {
-  app.use(cors({
-    origin: 'http://localhost:3000',
-    optionsSuccessStatus: 200
-  }));
-}
+// 启用日志
+app.use(morgan('dev'));
 
+// CORS 配置
+app.use(cors({
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200
+}));
+
+// 中间件
 app.use(express.json());
-app.use('/api/book', bookRoutes);
+app.use(express.urlencoded({ extended: true }));
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mybooks';
+// 路由
+app.use('/api', bookRoutes); // 修改路由前缀
+
+// 错误处理中间件
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.message : {}
+  });
+});
+
+// 数据库连接
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/bookstore';
 
 mongoose.connect(MONGODB_URI)
-  .then(async () => {
-    console.log('✅ Connected to MongoDB');
-
-    const db = mongoose.connection.db;
-
-    try {
-      // 检查集合是否存在
-      const collections = await db.listCollections().toArray();
-      const exists = collections.some(col => col.name === "books");
-
-      if (!exists) {
-        await db.createCollection("books");
-        console.log("✅ Created 'books' collection");
-      } else {
-        console.log("⚠️ 'books' collection already exists");
-      }
-    } catch (error) {
-      console.error("❌ Error ensuring 'books' collection:", error);
-    }
+  .then(() => {
+    console.log('Connected to MongoDB');
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
   })
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 export default app;

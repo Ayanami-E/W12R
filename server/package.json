@@ -11,9 +11,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/morgan": "^1.9.7",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "mongoose": "^8.10.0",
+    "morgan": "^1.10.0",
     "server": "file:"
   },
   "devDependencies": {
