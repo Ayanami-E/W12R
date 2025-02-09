@@ -22,29 +22,36 @@ app.use('/api/book', bookRoutes);
 // 数据库连接
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mybooks';
 
-mongoose.connect(MONGODB_URI)
-  .then(async () => {
+const connectDB = async () => {
+  try {
+    await mongoose.connect(MONGODB_URI);
     console.log('✅ Connected to MongoDB');
 
     // 获取数据库实例
     const db = mongoose.connection.db;
 
-    // 强制创建 'books' 集合（插入一个占位数据）
-    try {
-      await db.collection("books").insertOne({
-        name: "Placeholder Book",
-        author: "System",
-        pages: 1
-      });
-      console.log("✅ Ensured 'books' collection exists");
-    } catch (error) {
-      if (error.codeName === "DuplicateKey") {
-        console.log("⚠️ 'books' collection already exists");
-      } else {
-        console.error("❌ Error ensuring 'books' collection:", error);
-      }
+    // **检查 `books` 是否存在，不存在就创建**
+    const collections = await db.listCollections().toArray();
+    if (!collections.some(col => col.name === "books")) {
+      console.log("⚠️ 'books' collection does not exist, creating...");
+      await db.createCollection("books");
+      console.log("✅ Created 'books' collection");
+    } else {
+      console.log("✅ 'books' collection already exists");
     }
-  })
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);  // 直接终止进程，避免 Cypress 运行时 `server` 还没连上
+  }
+};
+
+// **先连接数据库，再启动 `server`**
+connectDB().then(() => {
+  const PORT = 1234;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+});
 
 export default app;
