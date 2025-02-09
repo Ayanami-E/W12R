@@ -20,7 +20,7 @@ app.use(express.json());
 app.use('/api/book', bookRoutes);
 
 // 数据库连接
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mybooks';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/testdb';
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
