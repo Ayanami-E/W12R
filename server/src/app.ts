@@ -20,10 +20,26 @@ app.use(express.json());
 app.use('/api/book', bookRoutes);
 
 // 数据库连接
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/testdb';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mybooks';
 
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(async () => {
+    console.log('✅ Connected to MongoDB');
+
+    // 获取数据库实例
+    const db = mongoose.connection.db;
+
+    // 检查 'books' 集合是否存在
+    const collections = await db.listCollections().toArray();
+    const collectionNames = collections.map(col => col.name);
+
+    if (!collectionNames.includes('books')) {
+      await db.createCollection('books');
+      console.log("✅ Created missing 'books' collection");
+    } else {
+      console.log("✅ 'books' collection already exists");
+    }
+  })
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
 export default app;
