@@ -29,15 +29,20 @@ mongoose.connect(MONGODB_URI)
     // 获取数据库实例
     const db = mongoose.connection.db;
 
-    // 检查 'books' 集合是否存在
-    const collections = await db.listCollections().toArray();
-    const collectionNames = collections.map(col => col.name);
-
-    if (!collectionNames.includes('books')) {
-      await db.createCollection('books');
-      console.log("✅ Created missing 'books' collection");
-    } else {
-      console.log("✅ 'books' collection already exists");
+    // 强制创建 'books' 集合（插入一个占位数据）
+    try {
+      await db.collection("books").insertOne({
+        name: "Placeholder Book",
+        author: "System",
+        pages: 1
+      });
+      console.log("✅ Ensured 'books' collection exists");
+    } catch (error) {
+      if (error.codeName === "DuplicateKey") {
+        console.log("⚠️ 'books' collection already exists");
+      } else {
+        console.error("❌ Error ensuring 'books' collection:", error);
+      }
     }
   })
   .catch(err => console.error('❌ MongoDB connection error:', err));
