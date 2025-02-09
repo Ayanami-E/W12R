@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import bookRoutes from './routes/bookRoutes';
+import bookRoutes from './bookRoutes';
 
 const app = express();
 
