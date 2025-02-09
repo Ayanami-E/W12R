@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "cd server && npm install && cd ../client && npm install",
+    "install": "cd client && npm install",
     "dev:client": "cd client && npm run dev",
     "dev:server": "cd server && npm run dev",
     "build": "cd client && npm run build",
