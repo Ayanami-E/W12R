@@ -27,10 +27,9 @@ const connectDB = async () => {
     await mongoose.connect(MONGODB_URI);
     console.log('✅ Connected to MongoDB');
 
-    // 获取数据库实例
     const db = mongoose.connection.db;
 
-    // **检查 `books` 是否存在，不存在就创建**
+    // **强制创建 `books` 集合**
     const collections = await db.listCollections().toArray();
     if (!collections.some(col => col.name === "books")) {
       console.log("⚠️ 'books' collection does not exist, creating...");
@@ -42,11 +41,11 @@ const connectDB = async () => {
 
   } catch (err) {
     console.error('❌ MongoDB connection error:', err);
-    process.exit(1);  // 直接终止进程，避免 Cypress 运行时 `server` 还没连上
+    process.exit(1); // 终止程序，防止 server 启动失败
   }
 };
 
-// **先连接数据库，再启动 `server`**
+// **确保数据库连接后再启动 `server`**
 connectDB().then(() => {
   const PORT = 1234;
   app.listen(PORT, () => {
