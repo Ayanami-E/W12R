@@ -5,6 +5,7 @@ import bookRoutes from './bookRoutes';
 
 const app = express();
 
+// 仅在开发环境启用 CORS
 if (process.env.NODE_ENV === 'development') {
   app.use(cors({
     origin: 'http://localhost:3000',
