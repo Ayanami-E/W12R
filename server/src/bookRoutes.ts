@@ -3,7 +3,6 @@ import Book from './book';
 
 const router = Router();
 
-// POST: 保存新书 - 现在路径是 /api/book
 router.post('/book', async (req: Request, res: Response): Promise<void> => {
     try {
         const { name, author, pages } = req.body;
@@ -20,7 +19,7 @@ router.post('/book', async (req: Request, res: Response): Promise<void> => {
     }
 });
 
-// GET: 通过书名获取书籍 - 现在路径是 /api/book/:title
+
 router.get('/book/:title', async (req: Request, res: Response): Promise<void> => {
     try {
         const title = decodeURIComponent(req.params.title);
